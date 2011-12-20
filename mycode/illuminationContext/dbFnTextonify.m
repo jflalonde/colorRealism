@@ -40,24 +40,7 @@ imgPath = fullfile(args.ImagesPath, annotation.image.folder, annotation.image.fi
 img = imread(imgPath);
 [h,w,c] = size(img); %#ok
 
-% convert to grayscale
-imgGray = rgb2gray(img);
-
-% filter it
-fprintf('Filtering image...'); tic;
-filteredImg = fbRun(args.FilterBank, imgGray);
-fprintf('done in %fs.\n', toc);
-
-% stack it into a nbPixel * nbDims vector
-filteredImg = cellfun(@(x) reshape(x, [size(x,1)*size(x,2) 1]), filteredImg, 'UniformOutput', 0);
-filteredImg = reshape(filteredImg, [1, size(filteredImg,1)*size(filteredImg,2)]);
-filteredImg = [filteredImg{:}];
-
-% find nearest neighbors for each pixel, and assign its index
-fprintf('Assigning textons...');
-[ind, d] = vgg_nearest_neighbour(filteredImg', args.ClusterCenters);
-textonMap = reshape(ind, [h w]);
-fprintf('done in %fs\n', toc);
+textonMap = textonify(img, args.FilterBank, args.ClusterCenters);
 
 % build the output .mat file path
 [path, baseFileName] = fileparts(annotation.image.filename);
