@@ -14,26 +14,38 @@ clusterCentersPath = getPathName('results', 'illuminationContext', 'textons', ..
     sprintf('clusterCentersTest_%d.mat', nbTextonClusters));
 
 databasesPath = getPathName('results', 'databases');
-objectDbPath = getPathName('results', 'objectDb');
 
 colorConcatHistPath = getPathName('results', 'globalMeasures', 'concatHisto');
 textonConcatHistPath = getPathName('results', 'globalMeasures', 'concatHistoTextons');
 
+%% User parameters (from ICCV'07)
+
+% number of bins in color histogram
 nbColorBins = 50;
+
+% number of nearest neighbors to retrieve from the database
+k = 50; 
+
+% threshold on distance to objects in the database to determine whether the
+% global or local measure should be used
+maxDistance = 0.35; 
+
+% blend between using color and texton distance
+alpha = 0.75;
 
 
 %% Load image information
 img = imread(imgPath);
-objMask = imread(objMaskPath);
+objMask = im2double(imread(objMaskPath));
+objMask = all(objMask>0.5, 3);
 
 %% Load object database information
-load(fullfile(databasesPath, 'objectDb.mat'), 'objectDb');
+% load(fullfile(databasesPath, 'objectDb.mat'), 'objectDb');
 
 %% Load concatenated histogram files
-colorHistFiles = dir(fullfile(colorConcatHistPath, '*lab_jointObj*'));
-colorHistFiles = {colorHistFiles(:).name};
-textonHistFiles = dir(fullfile(textonConcatHistPath, '*textonObj*'));
-textonHistFiles = {textonHistFiles(:).name};
+
+
+load(fullfile(databasesPath, 'indActiveLab_50.mat'));
 
 %% Load texton information
 
@@ -63,39 +75,30 @@ imgLabVec = reshape(imgLab, size(imgLab,1)*size(imgLab,2), size(imgLab,3));
 
 % compute color distributions
 colorObjHist = myHistoND(imgLabVec(objMask, :), nbColorBins, [0 -100 -100], [100 100 100]);
+colorObjHist = colorObjHist(indActiveLab);
 colorBgHist = myHistoND(imgLabVec(~objMask, :), nbColorBins, [0 -100 -100], [100 100 100]);
+colorBgHist = colorBgHist(indActiveLab);
 
-%% Find nearest neighbors in the database
+clear('textonMap', 'img', 'imgLab', 'imgLabVec', 'objMask');
+
+%% Find k-nearest neighbors in the database
 % Distance measure = 0.75*color + 0.25*texture on objects
 % Use distance on background as realism measure
 
-% Note: this should take forever.
-alpha = 0.75;
-for i_obj = 1:length(objectDb)
-    % load the object's color and texton histogram
-    objInfo = objectDb(i_obj).document;
+globalDistance = computeGlobalDistanceMeasure(colorConcatHistPath, textonConcatHistPath, ...
+    colorObjHist, textonObjHist, 'Obj', alpha, k);
+
+%% Decide whether to use the local or global measure for evaluating realism
+
+if globalDistance < maxDistance
+    % we found a good object. Rely on the distance to background.
+    fprintf('Using the global measure.\n');
+    realismScore = computeGlobalDistanceMeasure(colorConcatHistPath, textonConcatHistPath, ...
+        colorBgHist, textonBgHist, 'Bg', alpha, k);
     
-    % load all color histograms
-    colorDist = zeros(length(objectDb), 1);
-    textonDist = zeros(length(objectDb), 1);
-    
-    baseInd = 1;
-    for i_file = 1:length(colorHistFiles)
-        h = load(fullfile(colorConcatHistPath, colorHistFiles{1}));
-        validInd = find(cellfun(@(x) ~isempty(x), h.concatHisto));
-        
-        curInd = validInd+baseInd-1;
-        colorDist(curInd) = [];
-        
-        baseInd = baseInd + length(h.concatHisto)-1;
-    end
-    
-    % compute distance to object
-    colorDist = chisq(colorObjHist, colorDbObjHist);
-    textonDist = chisq(textonObjHist, textonDbObjHist);
-    
-    combinedDist = alpha*colorDist + (1-alpha)*textonDist;
+else
+    % we didn't find a good object. Rely on the local measure.
+    fprintf('Using the local measure.\n');
+    realismScore = alpha*chisq(colorBgHist, colorObjHist) + ...
+        (1-alpha)*chisq(textonBgHist, textonObjHist);
 end
-
-
-
