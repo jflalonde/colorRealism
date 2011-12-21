@@ -1,12 +1,17 @@
-function score = computeGlobalDistanceMeasure(colorConcatHistPath, textonConcatHistPath, ...
+function [score, indNearestNeighbor] = computeGlobalDistanceMeasure(...
+    colorConcatHistPath, textonConcatHistPath, ...
     colorHist, textonHist, type, alpha, k)
 % Computes the global distance measure between a piece of an image (object
 % or background) and a large database of images
 %
+%   [score, indNearestNeighbor] = computeGlobalDistanceMeasure(...
+%       colorConcatHistPath, textonConcatHistPath, colorHist, textonHist, ...
+%       type, alpha, k)
+%
 %   - type can be either 'Obj' or 'Bg'
 %   - alpha must be between 0 and 1 and represents the blend between color
 %   and texture information.
-%   - 
+%   - k is the number of nearest neighbor to use
 
 assert(strcmp(type, 'Obj') || strcmp(type, 'Bg'), ...
     'type must be either ''Obj'' or ''Bg''');
