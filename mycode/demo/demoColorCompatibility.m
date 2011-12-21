@@ -90,11 +90,14 @@ globalDistance = computeGlobalDistanceMeasure(colorConcatHistPath, textonConcatH
 
 %% Decide whether to use the local or global measure for evaluating realism
 
+useGlobal = false;
 if globalDistance < maxDistance
     % we found a good object. Rely on the distance to background.
     fprintf('Using the global measure.\n');
     realismScore = computeGlobalDistanceMeasure(colorConcatHistPath, textonConcatHistPath, ...
         colorBgHist, textonBgHist, 'Bg', alpha, k);
+    
+    useGlobal = true;
     
 else
     % we didn't find a good object. Rely on the local measure.
@@ -102,3 +105,21 @@ else
     realismScore = alpha*chisq(colorBgHist, colorObjHist) + ...
         (1-alpha)*chisq(textonBgHist, textonObjHist);
 end
+
+fprintf('Realism score: %.2f\n', realismScore);
+
+%% Re-color the object according to 
+% 1. background in the same image if the local measure was used
+% 2. background in the nearest-neighbor image if the global measure was used
+
+if useGlobal
+    error('implement me!');
+    bgImg = [];
+    bgMask = [];
+    
+    imgRecolored = recolorImage(img, objMask, bgImg, bgMask)
+else
+    imgRecolored = recolorImage(img, objMask);
+end
+
+% Recolor the image
