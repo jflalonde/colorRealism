@@ -9,9 +9,16 @@ README file -- color statistics project
 
 === Utils ===
 
-Don't forget to download the "utils" code, available online at:
+Don't forget to download the "utils" code, available at:
 
 https://github.com/jflalonde/utils
+
+Also, the re-coloring code requires VLFeat, available at: 
+
+http://www.vlfeat.org/
+
+Version 0.9.14 was used to test this code. 
+
 
 === Image database ===
 
@@ -22,8 +29,7 @@ If you are interested in obtaining the image database (it's basically a scaled-d
 version of a subset of LabelMe), send me an email and I'll put a .zip file
 online for you to download).
 
+
 === Recoloring ===
 
-The recoloring code is very slow because of Matlab's kmeans function. Feel 
-free to replace with your own, faster version.
 

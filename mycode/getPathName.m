@@ -40,6 +40,9 @@ else
 
         case 'codeUtils'
             path = fullfile(codeBasePath, 'utils');
+            
+        case 'codeUtilsPrivate'
+            path = fullfile(codeBasePath, 'utilsPrivate');
         
         case 'logs'
             path = fullfile(resultsBasePath, 'logs');

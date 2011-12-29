@@ -10,6 +10,7 @@ logFileRoot = getPathName('logs');
 path3rdParty = getPathName('code', '3rd_party');
 pathMyCode = getPathName('code', 'mycode');
 pathUtils = getPathName('codeUtils');
+pathUtilsPrivate = getPathName('codeUtilsPrivate');
 
 %% Turn off some annoying warnings
 warning off Images:initSize:adjustingMag;
@@ -21,4 +22,4 @@ restoredefaultpath;
 addpath(genpath(pathMyCode));
 addpath(genpath(pathUtils));
 addpath(genpath(path3rdParty));
- 
+addpath(genpath(fullfile(pathUtilsPrivate, 'vlfeat-0.9.14')));

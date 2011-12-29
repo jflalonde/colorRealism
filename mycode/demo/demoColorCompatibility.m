@@ -76,7 +76,7 @@ colorObjHist = colorObjHist(indActiveLab);
 colorBgHist = myHistoND(imgLabVec(~objMask, :), nbColorBins, [0 -100 -100], [100 100 100]);
 colorBgHist = colorBgHist(indActiveLab);
 
-clear('textonMap', 'imgLab', 'imgLabVec', 'objMask');
+clear('textonMap', 'imgLab', 'imgLabVec');
 
 %% Find k-nearest neighbors in the database
 % Distance measure = 0.75*color + 0.25*texture on objects
@@ -124,4 +124,4 @@ end
 
 %% Recolor the image
 imgRecolored = recolorImage(img, objMask, bgImg, bgMask, ...
-    'UseLAB', 1, 'Display', 1);
+    'UseLAB', 1, 'Display', 1, 'Sigma', 25);

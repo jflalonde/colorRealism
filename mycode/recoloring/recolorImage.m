@@ -81,6 +81,6 @@ if args.UseLAB
 end
 
 if args.Display
-    figure(7), subplot(1,2,1), imshow(srcImg), title('Original image'), ...
+    figure(7), subplot(1,2,1), imshow(lab2rgb(srcImg)), title('Original image'), ...
         subplot(1,2,2), imshow(recoloredImg), title(sprintf('Weighted nn cluster center, \\sigma=%d', sigma));
 end
