@@ -1,0 +1,29 @@
+README file -- color statistics project
+
+=== Getting started ===
+
+1. 
+2. Run 'setPath'.
+3. Run 'demoColorCompatibility'
+
+
+=== Utils ===
+
+Don't forget to download the "utils" code, available online at:
+
+https://github.com/jflalonde/utils
+
+=== Image database ===
+
+Right now, the image database is accessible through the webserver:
+http://balaton.graphics.cs.cmu.edu/jlalonde/colorStatistics/Images
+
+If you are interested in obtaining the image database (it's basically a scaled-down
+version of a subset of LabelMe), send me an email and I'll put a .zip file
+online for you to download).
+
+=== Recoloring ===
+
+The recoloring code is very slow because of Matlab's kmeans function. Feel 
+free to replace with your own, faster version.
+
