@@ -49,7 +49,7 @@ clusterNeighbors = sortedInd(:,1:K);
 tgtPixels = imgTgtVector(indPixelsTgt, :);
 tgtPixelsMat = repmat(tgtPixels, [1 1 K]);
 centersTgtMat = permute(reshape(centersTgt(clusterNeighbors,:), [length(indPixelsTgt) K 3]), [1 3 2]);
-distClusters = mysqueeze(sqrt(sum((tgtPixelsMat - centersTgtMat) .^ 2, 2)));
+distClusters = squeeze(sqrt(sum((tgtPixelsMat - centersTgtMat) .^ 2, 2)));
 
 % weight each distance by gaussian (normalized)
 weightClusters = exp(-distClusters.^2./sigma.^2);

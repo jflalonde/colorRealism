@@ -1,16 +1,29 @@
-function img = recolorImage(srcImg, objMask, tgtImg, bgMask)
+function recoloredImg = recolorImage(srcImg, objMask, tgtImg, bgMask, varargin)
 % Recolors the object in an image with the ICCV'07 algorithm.
 % 
-%   img = recolorImage(srcImg, objMask, <tgtImg, bgMask>)
+%   img = recolorImage(srcImg, objMask, tgtImg, bgMask, <'Param1', 'Value1'>, ...)
+% 
+% Set tgtImg=[] if the object should be recolored according to the
+% background in the same image.
 %
 %  
+
+% parse inputs
+% read arguments
+defaultArgs = struct('UseLAB', 1, 'Display', 0, 'Sigma', 5);
+args = parseargs(defaultArgs, varargin{:});
 
 assert(islogical(objMask), 'Object mask must be logical');
 
 srcImg = im2double(srcImg);
-if nargin == 2
-    tgtImg = im2double(srcImg);
+if isempty(tgtImg)
+    tgtImg = srcImg;
     bgMask = ~objMask;
+end
+
+if args.UseLAB
+    srcImg = rgb2lab(srcImg);
+    tgtImg = rgb2lab(tgtImg);
 end
 
 % Parameters
@@ -25,51 +38,49 @@ bgPixels = double(tgtImgVector(bgMask(:), :));
 objPixels = double(srcImgVector(objMask(:), :));
 
 %% Compute signatures
+fprintf('Computing signatures...\n');
 [centersObj, weightsObj, indsObj] = signaturesKmeans(objPixels, nbClusters);
-[centersBg, weightsBg, indsBg] = signaturesKmeans(bgPixels, nbClusters);
+[centersBg, weightsBg] = signaturesKmeans(bgPixels, nbClusters);
 
 %% Compute the EMD between signatures
+fprintf('Computing EMD...\n');
 distMat = pdist2(centersObj', centersBg');
 [distEMD, flowEMD] = emd_mex(weightsObj', weightsBg', distMat);
 
-emdFig = figure(4); hold on;
-plotEMD(emdFig, centersObj, centersBg, flowEMD);
-plotSignatures(emdFig, centersObj, weightsObj, 'lab');
-plotSignatures(emdFig, centersBg, weightsBg, 'lab');
-title(sprintf('K-means clustering with k=%d on image colors, EMD=%f', nbClusters, distEMD));
-xlabel('l'), ylabel('a'), zlabel('b');
+if args.Display
+    emdFig = figure(4); hold on;
+    plotEMD(emdFig, centersObj, centersBg, flowEMD);
+    
+    if args.UseLAB
+        colorspace = 'lab';
+    else
+        colorspace = 'rgb';
+    end
+        
+    plotSignatures(emdFig, centersObj, weightsObj, colorspace);
+    plotSignatures(emdFig, centersBg, weightsBg, colorspace);
+    
+    title(sprintf('K-means clustering with k=%d on image colors, EMD=%f', nbClusters, distEMD));
+    
+    if args.UseLAB
+        xlabel('L'), ylabel('A'), zlabel('B');
+    else
+        xlabel('R'), ylabel('G'), zlabel('B');        
+    end
+end
 
-%% Weight each background clusters by its texton matching to the object
-weightsBgTextons = reweightClustersFromTextons(weightsBg, textonWeight(bgMask(:)), indsBg);
-
-% re-compute the EMD with the texton-weighted clusters
-[distEMD, flowEMDTextons] = emd_mex(weightsObj', weightsBgTextons', distMat);
-
-emdFig = figure(5); hold on;
-plotEMD(emdFig, centersObj, centersBg, flowEMDTextons);
-plotSignatures(emdFig, centersObj, weightsObj, 'lab');
-plotSignatures(emdFig, centersBg, weightsBgTextons, 'lab');
-title(sprintf('EMD with weighted clusters with k=%d on image colors, EMD=%f', nbClusters, distEMD));
-xlabel('l'), ylabel('a'), zlabel('b');
 
 %% Recolor
-sigma = 5;
-[imgTgtNN, imgTgtNNW, pixelShift, clusterShift, clusterShiftWeight] = ...
-    recolorImageFromEMD(centersBg, centersObj, img, indsObj, find(objMask(:)), flowEMD, sigma);
+fprintf('Recoloring...\n');
+sigma = args.Sigma;
+[imgTgtNN, recoloredImg] = recolorImageFromEMD(centersBg, centersObj, srcImg, ...
+    indsObj, find(objMask(:)), flowEMD, sigma);
 
-figure(7), subplot(1,2,1), imshow(uint8(rgbImage)), title('Original image'), ...
-    subplot(1,2,2), imshow(lab2rgb(imgTgtNNW)), title(sprintf('Weighted nn cluster center, \\sigma=%d', sigma));
+if args.UseLAB
+    recoloredImg = lab2rgb(recoloredImg);
+end
 
-clusterShiftWeightMax = max(clusterShiftWeight, [], 2);
-pctDist(sigmas==sigma) = nnz(clusterShiftWeightMax<0.5) / length(clusterShiftWeightMax);
-
-%% Recolor with texton weighting
-sigma = 5;
-[imgTgtNN, imgTgtNNW, pixelShift, clusterShift, clusterShiftWeight] = ...
-    recolorImageFromEMD(centersBg, centersObj, img, indsObj, find(objMask(:)), flowEMDTextons, sigma);
-
-figure(8), subplot(1,2,1), imshow(uint8(rgbImage)), title('Original image'), ...
-    subplot(1,2,2), imshow(lab2rgb(imgTgtNNW)), title(sprintf('Weighted nn cluster center (textons), \\sigma=%d', sigma));
-
-clusterShiftWeightMax = max(clusterShiftWeight, [], 2);
-pctDist(sigmas==sigma) = nnz(clusterShiftWeightMax<0.5) / length(clusterShiftWeightMax);
+if args.Display
+    figure(7), subplot(1,2,1), imshow(srcImg), title('Original image'), ...
+        subplot(1,2,2), imshow(recoloredImg), title(sprintf('Weighted nn cluster center, \\sigma=%d', sigma));
+end
