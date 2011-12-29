@@ -9,6 +9,8 @@ function demoColorCompatibility
 imgPath = '/Users/jflalonde/Documents/research/data/colorStatistics/fromSu/ToLalonde/1/Composite.jpg';
 objMaskPath = '/Users/jflalonde/Documents/research/data/colorStatistics/fromSu/ToLalonde/1/Composite_Mask.jpg';
 
+imageDbPath = 'http://balaton.graphics.cs.cmu.edu/jlalonde/colorStatistics/Images';
+
 nbTextonClusters = 1000;
 clusterCentersPath = getPathName('results', 'illuminationContext', 'textons', ...
     sprintf('clusterCentersTest_%d.mat', nbTextonClusters));
@@ -40,11 +42,6 @@ objMask = im2double(imread(objMaskPath));
 objMask = all(objMask>0.5, 3);
 
 %% Load object database information
-% load(fullfile(databasesPath, 'objectDb.mat'), 'objectDb');
-
-%% Load concatenated histogram files
-
-
 load(fullfile(databasesPath, 'indActiveLab_50.mat'));
 
 %% Load texton information
@@ -79,31 +76,25 @@ colorObjHist = colorObjHist(indActiveLab);
 colorBgHist = myHistoND(imgLabVec(~objMask, :), nbColorBins, [0 -100 -100], [100 100 100]);
 colorBgHist = colorBgHist(indActiveLab);
 
-clear('textonMap', 'img', 'imgLab', 'imgLabVec', 'objMask');
+clear('textonMap', 'imgLab', 'imgLabVec', 'objMask');
 
 %% Find k-nearest neighbors in the database
 % Distance measure = 0.75*color + 0.25*texture on objects
 % Use distance on background as realism measure
-
-globalDistance = computeGlobalDistanceMeasure(colorConcatHistPath, textonConcatHistPath, ...
-    colorObjHist, textonObjHist, 'Obj', alpha, k);
+[realismScore, indGlobal] = computeGlobalRealismScore(colorConcatHistPath, ...
+    textonConcatHistPath, colorObjHist, textonObjHist, alpha, k);
 
 %% Decide whether to use the local or global measure for evaluating realism
 
-useGlobal = false;
-if globalDistance < maxDistance
-    % we found a good object. Rely on the distance to background.
-    fprintf('Using the global measure.\n');
-    realismScore = computeGlobalDistanceMeasure(colorConcatHistPath, textonConcatHistPath, ...
-        colorBgHist, textonBgHist, 'Bg', alpha, k);
-    
-    useGlobal = true;
-    
-else
+useGlobal = true;
+if realismScore > maxDistance
     % we didn't find a good object. Rely on the local measure.
     fprintf('Using the local measure.\n');
     realismScore = alpha*chisq(colorBgHist, colorObjHist) + ...
         (1-alpha)*chisq(textonBgHist, textonObjHist);
+    useGlobal = false;
+else
+    fprintf('Using the global measure.\n');
 end
 
 fprintf('Realism score: %.2f\n', realismScore);
@@ -113,13 +104,24 @@ fprintf('Realism score: %.2f\n', realismScore);
 % 2. background in the nearest-neighbor image if the global measure was used
 
 if useGlobal
-    error('implement me!');
-    bgImg = [];
-    bgMask = [];
+    % retrieve the nearest-neighbor image
+    load(fullfile(databasesPath, 'objectDb.mat'), 'objectDb');
+    objInfo = objectDb(indGlobal).document;
     
-    imgRecolored = recolorImage(img, objMask, bgImg, bgMask)
+    globalImgPath = fullfile(imageDbPath, objInfo.image.folder, ...
+        objInfo.image.filename);
+    bgImg = im2double(imread(globalImgPath));
+    
+    % build the mask
+    xPoly = str2double({objInfo.object.polygon.pt(:).x});
+    yPoly = str2double({objInfo.object.polygon.pt(:).y});
+    bgMask = poly2mask(xPoly, yPoly, size(bgImg, 1), size(bgImg, 2));
+    
 else
-    imgRecolored = recolorImage(img, objMask);
+    % set to empty. recolorImage will use img and ~objMask internally.
+    bgImg = []; bgMask = [];
 end
 
-% Recolor the image
+%% Recolor the image
+imgRecolored = recolorImage(img, objMask, bgImg, bgMask, ...
+    'UseLAB', 1, 'Display', 1);
