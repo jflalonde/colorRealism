@@ -47,11 +47,13 @@ objMaskPath = fullfile('data', 'images', sprintf('%s.mat', imgName));
 
 imageDbPath = 'http://balaton.graphics.cs.cmu.edu/jlalonde/colorStatistics/Images';
 
+dbPath = fullfile('data', 'db');
+
 nbTextonClusters = 1000;
 clusterCentersPath = fullfile('data', sprintf('clusterCentersTest_%d.mat', nbTextonClusters));
 
-colorConcatHistPath = fullfile('data', 'concatHisto');
-textonConcatHistPath = fullfile('data', 'concatHistoTextons');
+colorConcatHistPath = fullfile(dbPath, 'concatHisto');
+textonConcatHistPath = fullfile(dbPath, 'concatHistoTextons');
 
 %% Load image information
 img = imread(imgPath);
