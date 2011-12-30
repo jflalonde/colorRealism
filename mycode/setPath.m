@@ -22,4 +22,5 @@ restoredefaultpath;
 addpath(genpath(pathMyCode));
 addpath(genpath(pathUtils));
 addpath(genpath(path3rdParty));
-addpath(genpath(fullfile(pathUtilsPrivate, 'vlfeat-0.9.14')));
+addpath(genpath(fullfile(pathUtilsPrivate, '3rd_party', 'vlfeat-0.9.14')));
+vl_setup;
