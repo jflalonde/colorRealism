@@ -38,6 +38,16 @@ The 'db' directory contains the following information:
   pair in the database. Used to retrieve the image corresponding to each pair. 
 
 
+=== Compiled code ===
+
+Make sure to compile (mex):
+
+BruteSearchMex:
+cd 3rd_party/nearestneighbor; mex BruteSearchMex.cpp;
+
+EMD:
+cd 3rd_party/emd; emd_mex;
+
 
 === Utils ===
 
