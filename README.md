@@ -1,4 +1,5 @@
-README file -- color statistics project
+Using color compatibility for assessing image realism
+------------------------
 
 This software package implements the algorithms presented in our ICCV 2007 paper:
 
@@ -13,7 +14,8 @@ and was developed as part of the research. I'm including it for completeness.
 Please refer to the demo/demoColorCompatibility.m file as a starting point to 
 understand what is being called, and how. 
 
-=== Getting started ===
+Getting started
+---------------
 
 1. Download 'utils' package and VLfeat (see below);
 2. Download the compressed database information and extract into demo/data (see below); 
@@ -22,7 +24,8 @@ understand what is being called, and how.
 5. Run 'demoColorCompatibility'.
 
 
-=== Compressed database ===
+Compressed database
+-------------------
 
 Download the compressed database information at
 
@@ -38,18 +41,20 @@ The 'db' directory contains the following information:
   pair in the database. Used to retrieve the image corresponding to each pair. 
 
 
-=== Compiled code ===
+Compiled code
+-------------
 
 Make sure to compile (mex):
 
 BruteSearchMex:
-cd 3rd_party/nearestneighbor; mex BruteSearchMex.cpp;
+  cd 3rd_party/nearestneighbor; mex BruteSearchMex.cpp;
 
 EMD:
-cd 3rd_party/emd; emd_mex;
+  cd 3rd_party/emd; emd_mex;
 
 
-=== Utils ===
+Utils
+-----
 
 Don't forget to download the "utils" code, available at:
 
@@ -62,7 +67,8 @@ http://www.vlfeat.org/
 Version 0.9.14 was used to test this code. 
 
 
-=== Image database ===
+Image database
+--------------
 
 Right now, the image database is accessible through the webserver:
 http://balaton.graphics.cs.cmu.edu/jlalonde/colorStatistics/Images
