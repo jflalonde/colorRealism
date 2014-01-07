@@ -50,7 +50,7 @@ BruteSearchMex:
   cd 3rd_party/nearestneighbor; mex BruteSearchMex.cpp;
 
 EMD:
-  cd 3rd_party/emd; emd_mex;
+  cd 3rd_party/emd; build_emd;
 
 
 Utils
