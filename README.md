@@ -53,7 +53,7 @@ EMD:
   cd 3rd_party/emd; build_emd;
 
 
-Utils
+Dependencies
 -----
 
 Don't forget to download the "utils" code, available at:
@@ -65,6 +65,12 @@ Also, the re-coloring code requires VLFeat, available at:
 http://www.vlfeat.org/
 
 Version 0.9.14 was used to test this code. 
+
+The Berkeley Segmentation code, included within this package, originated from:
+
+https://www.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/
+
+All credits go to the original authors of this work. 
 
 
 Image database
